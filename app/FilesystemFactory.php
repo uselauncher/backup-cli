@@ -91,10 +91,10 @@ class FilesystemFactory
             'username' => Arr::get($this->config, 'username'),
         ];
 
-        if ($password = Arr::get($this->config, 'password')) {
-            $config['password'] = $password;
-        } else {
+        if (Arr::get($this->config, 'use_private_key')) {
             $config['privateKey'] = Arr::get($this->config, 'private_key');
+        } else {
+            $config['password'] = Arr::get($this->config, 'password');
         }
 
         return $this->filesystemManager->build($config);

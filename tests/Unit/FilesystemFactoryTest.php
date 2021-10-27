@@ -79,10 +79,11 @@ test('it can build a s3 filesystem instance', function () {
 
 test('it can build a sftp filesystem instance with a password', function () {
     $filesystem = app(FilesystemFactory::class)->create([
-        'driver'   => 'sftp',
-        'host'     => 'host',
-        'username' => 'username',
-        'password' => 'password',
+        'driver'          => 'sftp',
+        'host'            => 'host',
+        'username'        => 'username',
+        'password'        => 'password',
+        'use_private_key' => false,
     ]);
 
     /** @var Filesystem $driver */
@@ -97,9 +98,10 @@ test('it can build a sftp filesystem instance with a password', function () {
 
 test('it can build a sftp filesystem instance with a sshkey', function () {
     $filesystem = app(FilesystemFactory::class)->create([
-        'driver'   => 'sftp',
-        'host'     => 'host',
-        'username' => 'username',
+        'driver'          => 'sftp',
+        'host'            => 'host',
+        'username'        => 'username',
+        'use_private_key' => true,
     ]);
 
     /** @var Filesystem $driver */
