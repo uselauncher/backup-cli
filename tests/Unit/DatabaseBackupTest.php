@@ -3,6 +3,7 @@
 use App\DatabaseBackup;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Storage;
+use League\Flysystem\Adapter\Local;
 use League\Flysystem\Filesystem;
 use League\Flysystem\Sftp\SftpAdapter;
 use Spatie\DbDumper\DbDumper;
@@ -41,4 +42,30 @@ test('it can store a dump on a filesystem', function () {
     $backup->handle('my_app');
 
     expect(Storage::allFiles())->toBeEmpty();
+});
+
+test('it can store a dump on a local filesystem', function () {
+    $dumper = Mockery::mock(DbDumper::class);
+    $filesystem = Mockery::mock(FilesystemAdapter::class);
+
+    $backup = new DatabaseBackup($dumper, $filesystem);
+
+    $dumper->shouldReceive('setDbName')->andReturnSelf();
+    $dumper->shouldReceive('dumpToFile')->with(storage_path('db.zip'));
+
+    $dumper->shouldReceive('getDbName')->andReturn('my_app');
+
+    $filesystem->shouldReceive('getDriver')->andReturn(
+        Mockery::mock(Filesystem::class)->shouldReceive('getAdapter')->andReturn(
+            Mockery::mock(Local::class)
+        )->getMock()
+    );
+
+    $filesystem->shouldReceive('path')->withArgs(function ($filename) {
+        expect($filename)->toStartWith('my-app-');
+
+        return true;
+    })->andReturn(storage_path('db.zip'));
+
+    $backup->handle('my_app');
 });
