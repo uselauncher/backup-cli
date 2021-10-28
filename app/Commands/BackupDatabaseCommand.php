@@ -47,9 +47,9 @@ class BackupDatabaseCommand extends Command
         );
 
         [$withError, $withoutError] = Collection::make($job['databases'])
-            ->map(function (string $database) use ($databaseBackup) {
+            ->map(function (string $database) use ($databaseBackup, $job) {
                 try {
-                    $databaseBackup->handle($database);
+                    $databaseBackup->handle($database, $job['path']);
                 } catch (Throwable $e) {
                     return "Could not backup database {$database}: " . $e->getMessage();
                 }

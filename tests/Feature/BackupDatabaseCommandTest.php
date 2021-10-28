@@ -26,6 +26,7 @@ test('it fetches the job data and runs the backup', function () {
                     'username' => 'root',
                 ],
                 'databases'     => ['my_app'],
+                'path'          => '/',
                 'token'         => '0123456789abcdefghijklmnopqrstuv',
                 'cipher'        => 'AES-256-CBC',
                 'succeeded_url' => 'https://api.com/succeeded',
@@ -60,7 +61,7 @@ test('it fetches the job data and runs the backup', function () {
 
     //
     $backup = $this->mock(DatabaseBackup::class);
-    $backup->shouldReceive('handle')->with('my_app');
+    $backup->shouldReceive('handle')->with('my_app', '/');
 
     $backupFactory = $this->mock(BackupFactory::class);
     $backupFactory->shouldReceive('database')->with($dumper, $filesystem)->andReturn($backup);
@@ -83,6 +84,7 @@ test('it can call the failed url', function () {
                 'database'      => [],
                 'filesystem'    => [],
                 'databases'     => ['my_app'],
+                'path'          => '/',
                 'token'         => '0123456789abcdefghijklmnopqrstuv',
                 'cipher'        => 'AES-256-CBC',
                 'succeeded_url' => 'https://api.com/succeeded',
@@ -107,7 +109,7 @@ test('it can call the failed url', function () {
 
     $backup = $this->mock(DatabaseBackup::class)
         ->shouldReceive('handle')
-        ->with('my_app')
+        ->with('my_app', '/')
         ->andThrow(new Exception("Database not found"))
         ->getMock();
 

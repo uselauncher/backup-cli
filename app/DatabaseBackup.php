@@ -6,6 +6,7 @@ use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use League\Flysystem\Adapter\Local;
+use League\Flysystem\AdapterInterface;
 use League\Flysystem\Filesystem;
 use League\Flysystem\WebDAV\WebDAVAdapter;
 use Spatie\DbDumper\DbDumper;
@@ -17,16 +18,26 @@ class DatabaseBackup
     }
 
     /**
+     * Returns the adapter instance of the filesystem.
+     *
+     * @return \League\Flysystem\AdapterInterface
+     */
+    private function getFilesystemAdapter(): AdapterInterface
+    {
+        /** @var Filesystem $driver */
+        $driver = $this->filesystem->getDriver();
+
+        return $driver->getAdapter();
+    }
+
+    /**
      * Returns a boolean whether the filesystem is a Local driver.
      *
      * @return boolean
      */
     private function isLocal(): bool
     {
-        /** @var Filesystem $driver */
-        $driver = $this->filesystem->getDriver();
-
-        return $driver->getAdapter() instanceof Local;
+        return $this->getFilesystemAdapter() instanceof Local;
     }
 
     /**
@@ -36,32 +47,34 @@ class DatabaseBackup
      */
     private function isWebdav(): bool
     {
-        /** @var Filesystem $driver */
-        $driver = $this->filesystem->getDriver();
-
-        return $driver->getAdapter() instanceof WebDAVAdapter;
+        return $this->getFilesystemAdapter() instanceof WebDAVAdapter;
     }
 
     /**
      * Dumps the database to the given filesystem.
      *
      * @param string $database
+     * @param string $path
      * @return string
      */
-    public function handle(string $database): string
+    public function handle(string $database, string $path = '/'): string
     {
         $filename = Str::slug($database) . '-' . now()->format('Y-m-d-H-i-s') . '.sql.gz';
+
+        $normalizedPath = ltrim(rtrim($path, '/'), '/');
+
+        $fullPath = $normalizedPath ? "{$normalizedPath}/{$filename}" : $filename;
 
         $isLocal = $this->isLocal();
 
         try {
             $this->dumper->setDbName($database)->dumpToFile(
-                $isLocal ? $this->filesystem->path($filename) : Storage::path($filename)
+                $isLocal ? $this->filesystem->path($fullPath) : Storage::path($filename)
             );
 
             if (!$isLocal) {
                 $this->filesystem->put(
-                    $filename,
+                    $fullPath,
                     $this->isWebdav() ? Storage::get($filename) : Storage::readStream($filename)
                 );
             }
@@ -71,6 +84,6 @@ class DatabaseBackup
             }
         }
 
-        return $filename;
+        return $path;
     }
 }
