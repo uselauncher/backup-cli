@@ -96,6 +96,8 @@ test('it can store a dump on a filesystem with a prefixed path', function () {
         )->getMock()
     );
 
+    $filesystem->shouldReceive('makeDirectory')->with('backups');
+
     $filesystem->shouldReceive('put')->withArgs(function ($filename, $contents) {
         expect($filename)->toStartWith('backups/my-app-');
         expect($contents)->toBeResource();
@@ -124,6 +126,8 @@ test('it can store a dump on a local filesystem with a prefixed path', function 
             Mockery::mock(Local::class)
         )->getMock()
     );
+
+    $filesystem->shouldReceive('makeDirectory')->with('backups');
 
     $filesystem->shouldReceive('path')->withArgs(function ($filename) {
         expect($filename)->toStartWith('backups/my-app-');

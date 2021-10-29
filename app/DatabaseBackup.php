@@ -63,6 +63,10 @@ class DatabaseBackup
 
         $normalizedPath = ltrim(rtrim($path, '/'), '/');
 
+        if ($normalizedPath) {
+            $this->filesystem->makeDirectory($normalizedPath);
+        }
+
         $fullPath = $normalizedPath ? "{$normalizedPath}/{$filename}" : $filename;
 
         $isLocal = $this->isLocal();
