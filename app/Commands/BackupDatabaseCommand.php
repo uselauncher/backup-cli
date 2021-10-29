@@ -64,7 +64,7 @@ class BackupDatabaseCommand extends Command
             return $this->info("Backup finished without errors.");
         }
 
-        $this->post($job['failed_url'], ['errors' => $withError->all()]);
+        $this->post($job['failed_url'], ['errors' => $withError->implode(PHP_EOL)]);
 
         $this->error("Backup finished with errors:");
 
